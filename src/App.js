@@ -55,6 +55,7 @@ const Search = styled.input`
   border: 2px solid #22262c;
   border-radius: 6px;
   min-width: 300px;
+  text-transform: capitalize;
 
   &:focus {
     border-color: #1f6feb;
