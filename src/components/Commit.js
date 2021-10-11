@@ -22,7 +22,7 @@ const Message = styled.div`
   padding: 10px;
   font-size: 15px;
   height: 2em; /* height is 2x line-height, so two lines will display */
-
+  overflow: hidden;
   a {
     text-decoration: none;
     color: #fff;
