@@ -1,22 +1,49 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { formatDate } from "../utils";
 
 const RepoContainer = styled.div`
-  background-color: #161b22;
-  /* color: #8b949e; */
+  /* background-color: #161b22; */
   height: 100px;
 
-  border: 1px solid #22262c;
+  border: 3px solid #22262c;
   border-radius: 6px;
   margin: 20px auto;
   padding: 1rem;
   width: 100%;
   height: 100%;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-2px);
+    transition: transform all 0.3s;
+    background-color: #171b21;
+  }
+
+  &.active-repo {
+    pointer-events: none;
+    background-color: #3470e3;
+    color: #d7dbdf;
+    border: none;
+  }
 `;
 
 const RepoName = styled.div`
-  color: #58a6ff;
   font-size: 1.25rem;
+  color: #58a6ff;
+
+  a {
+    color: #58a6ff;
+    text-decoration: none;
+
+    &.active-repo {
+      color: #ffff;
+    }
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
 `;
 
 const Description = styled.div`
@@ -33,34 +60,63 @@ const RepoInfo = styled.div`
   font-size: 0.9rem;
 `;
 
-const StarCount = styled.div`
+const handleColorType = (color) => {
+  switch (color) {
+    case "Java":
+      return "#b07219";
+    case "JavaScript":
+      return "#f1e05a";
+    case "Python":
+      return "#3572A5";
+    case "HTML":
+      return "#00ADD8";
+    case "Go":
+      return "#e34c26";
+    default:
+      return "#fff";
+  }
+};
+
+const LanguageLogo = styled.span`
+  position: relative;
+  top: 1px;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  margin-right: 3px;
+  background-color: ${({ color }) => handleColorType(color)};
+`;
+
+const StarCount = styled.span`
   display: flex;
   align-items: center;
 `;
 
-const ForkCount = styled.div`
+const ForkCount = styled.span`
   display: flex;
   align-items: center;
 `;
 
-export const Repository = ({ repo }) => {
-  const formatDate = (date) => {
-    let newDate = new Date(date);
-    return `${
-      newDate.getMonth() + 1
-    }-${newDate.getDate()}-${newDate.getFullYear()}`;
-  };
-
+export const Repository = ({ repo, onClick, className }) => {
   return (
-    <RepoContainer>
-      <RepoName>{repo.name}</RepoName>
-      <Description>{repo.description}</Description>
+    <RepoContainer onClick={onClick} className={className}>
+      <RepoName>
+        <a href={repo.html_url} className={className} target="_blank">
+          {repo.name}
+        </a>
+      </RepoName>
+      <Description className={className}>{repo.description}</Description>
 
       <RepoInfo>
         {repo.language !== null ? (
-          <div>{repo.language}</div>
+          <div>
+            <LanguageLogo color={repo.language}></LanguageLogo>
+            <span>{repo.language}</span>
+          </div>
         ) : (
-          <div>Not Specified</div>
+          <span>Not Specified</span>
         )}
 
         <StarCount>
@@ -94,7 +150,7 @@ export const Repository = ({ repo }) => {
           </svg>
           {repo.forks_count}
         </ForkCount>
-        <div>Created: {formatDate(repo.created_at)}</div>
+        <div>Created on {formatDate(repo.created_at)}</div>
       </RepoInfo>
     </RepoContainer>
   );
