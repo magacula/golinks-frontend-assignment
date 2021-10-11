@@ -1,12 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { formatDate, formatCommitHash } from "../utils";
 
 const CommitItemContainer = styled.div`
-  /* margin: 20px auto; */
   padding-bottom: 0.5rem;
   margin-bottom: 10px;
-  /* box-shadow: rgb(112 152 255 / 25%) -7px 0px 0px; */
   box-shadow: rgb(52, 112, 227) -7px 0px 0px;
   border: 2px solid #22262c;
   border-radius: 6px;
@@ -23,9 +21,7 @@ const Message = styled.div`
   color: #fff;
   padding: 10px;
   font-size: 15px;
-
   height: 2em; /* height is 2x line-height, so two lines will display */
-  overflow: hidden; /* prevents extra lines from being visible */
 
   a {
     text-decoration: none;
@@ -66,35 +62,33 @@ const CommitHash = styled.div`
   text-align: center;
   padding: 5px 6px;
   background-color: #31363c;
-  overflow: hidden; /* prevents extra lines from being visible */
-
-  :hover {
-    /* background-color: #31363c; */
-  }
+  overflow: hidden;
 `;
 
 export const Commit = ({ commit }) => {
   return (
-    <CommitItemContainer>
-      <Message>
-        <a href={commit.html_url} target="__blank">
-          {commit.commit.message}
-        </a>
-      </Message>
+    <>
+      <CommitItemContainer>
+        <Message>
+          <a href={commit.html_url} target="__blank">
+            {commit.commit.message}
+          </a>
+        </Message>
 
-      <CommitInfo>
-        <CommitCreated>
-          {commit.author ? (
-            <Author>{commit.author.login}</Author>
-          ) : (
-            <Author>{commit.commit.author.name}</Author>
-          )}
-          <p>commited on</p>
-          <div>{formatDate(commit.commit.author.date)}</div>
-        </CommitCreated>
+        <CommitInfo>
+          <CommitCreated>
+            {commit.author ? (
+              <Author>{commit.author.login}</Author>
+            ) : (
+              <Author>{commit.commit.author.name}</Author>
+            )}
+            <p>commited on</p>
+            <div>{formatDate(commit.commit.author.date)}</div>
+          </CommitCreated>
 
-        <CommitHash>{formatCommitHash(commit.sha)}</CommitHash>
-      </CommitInfo>
-    </CommitItemContainer>
+          <CommitHash>{formatCommitHash(commit.sha)}</CommitHash>
+        </CommitInfo>
+      </CommitItemContainer>
+    </>
   );
 };

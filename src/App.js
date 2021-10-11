@@ -4,10 +4,18 @@ import { ScaleLoader } from "react-spinners";
 import { Repository } from "./components/Repository";
 import { Commit } from "./components/Commit";
 import { fetchData } from "./api/api";
+import { Button } from "./components/Button";
 
 /***** App Styles ****/
 const AppContainer = styled.div`
-  margin: 0 10rem;
+  margin: 0 20rem;
+
+  @media only screen and (max-width: 1440px) {
+    margin: 0 7rem;
+  }
+  @media only screen and (max-width: 1024px) {
+    margin: 0 1.5rem;
+  }
 `;
 
 const FormContainer = styled.div`
@@ -16,28 +24,10 @@ const FormContainer = styled.div`
   cursor: pointer;
 
   button {
-    position: relative;
-    display: inline-block;
-    padding: 5px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 20px;
-    white-space: nowrap;
-    vertical-align: middle;
-    cursor: pointer;
-    background-color: #21262d;
-    color: #c9d1d9;
-    transition: 0.2s cubic-bezier(0.3, 0, 0.5, 1);
-    transition-property: color, background-color, border-color;
-    user-select: none;
-    border: 1px #f0f6fc1a solid;
-    border-radius: 6px;
     margin-left: 0.5rem;
-
-    &:hover {
-      background-color: #30363d;
-      border: 1px #8b949e solid;
-      transition-duration: 0.1s;
+    @media only screen and (max-width: 425px) {
+      margin-top: 0.5rem;
+      margin-left: 0;
     }
   }
 `;
@@ -90,7 +80,12 @@ const SectionHeading = styled.div`
   margin-top: 0.25rem;
 `;
 
-const MainContainer = styled.div``;
+const MainContainer = styled.div`
+  @media only screen and (max-width: 1024px) {
+    display: flex;
+    justify-content: center;
+  }
+`;
 
 const RepoCount = styled.span`
   display: inline-block;
@@ -121,6 +116,13 @@ const SideBar = styled.div`
     color: #c9d1d9;
     font-weight: 500;
     font-size: 1.25rem;
+  }
+  @media only screen and (max-width: 768px) {
+    padding: 0 0 40px 0;
+  }
+
+  @media only screen and (max-width: 425px) {
+    top: 215px;
   }
 `;
 
@@ -172,25 +174,56 @@ const CommitContent = styled.section`
   bottom: 0;
 `;
 
+const MobileCommitContent = styled.div`
+  overflow-y: auto;
+  margin-left: 600px;
+  padding: 16px 48px;
+  width: 600px;
+  top: 180px;
+  position: fixed;
+  bottom: 0;
+
+  button {
+    margin-left: 0;
+    margin-bottom: 2rem;
+  }
+
+  @media only screen and (max-width: 1024px) {
+    background-color: #0d1117;
+    margin-left: 0;
+    z-index: 6;
+  }
+
+  @media only screen and (max-width: 768px) {
+    width: 100%;
+  }
+
+  @media only screen and (max-width: 425px) {
+    top: 215px;
+    padding: 16px 25px;
+  }
+`;
+
 function App() {
   const [orgName, setOrgName] = useState(null);
   const [title, setTitle] = useState(null);
+
   const [totalRepos, setTotalRepos] = useState(0);
   const [data, setData] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [pageNum, setPageNum] = useState(1);
 
-  const [selectedRepo, setSelectedRepo] = useState("");
+  const [selectedRepo, setSelectedRepo] = useState(null);
   const [commits, setCommits] = useState([]);
+  const [showCommits, setShowCommits] = useState(true);
+
+  const [resize, setResize] = useState(false);
 
   // ref used to target scrollable element to scroll back to top after switching pages
   const scrollableElementRef = useRef();
 
-  // const org = "Netflix";
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("form submitted");
     fetchRepos(1);
     getTotalRepoCount();
   };
@@ -211,8 +244,20 @@ function App() {
     }
   };
 
-  // Get Total Repository Count only on the first render
+  // if window width is less than 1024px, then render Mobile component
+  const handleWindowResize = () => {
+    window.innerWidth < 1024 ? setResize(true) : setResize(false);
+  };
 
+  // useEffect that keeps track of window resizing between renders
+  useEffect(() => {
+    window.addEventListener("resize", handleWindowResize);
+    return () => {
+      window.removeEventListener("resize", handleWindowResize);
+    };
+  }, []);
+
+  // Get Total Repository Count only on the first render
   // makes API Call to retrieve total amount of public repositories
   const getTotalRepoCount = async () => {
     const data = await fetchData(`https://api.github.com/orgs/${orgName}`);
@@ -223,6 +268,7 @@ function App() {
     setTotalRepos(data.public_repos);
   };
 
+  // Fetch Repos API Call
   const fetchRepos = async (pageNum) => {
     const data = await fetchData(
       `https://api.github.com/orgs/${orgName}/repos?page=${pageNum}`
@@ -230,6 +276,7 @@ function App() {
     sortByStars(data);
   };
 
+  // Sorting Repos in Descending Order
   const sortByStars = (data) => {
     // creating a new array to store sorted repos
     let sortedRepos = Object.assign([], data);
@@ -240,6 +287,7 @@ function App() {
     setData(sortedRepos);
   };
 
+  // Fetch a list of recent commits from repo
   const getCommits = async (repo) => {
     const data = await fetchData(
       `https://api.github.com/repos/${orgName}/${repo}/commits?per_page/master`
@@ -247,10 +295,13 @@ function App() {
     setCommits(data);
   };
 
+  // useEffect that renders every time we fetch repositories or navigate to diff. page number
   useEffect(() => {
     // Scroll to top of page after render
     scrollableElementRef.current.scrollTo(0, 0);
-    if (orgName !== null) {
+
+    // only fetch repos if organization name is entered into input
+    if (orgName) {
       fetchRepos(pageNum);
     }
   }, [pageNum]);
@@ -290,14 +341,13 @@ function App() {
                 fillRule="evenodd"
                 d="M11.5 7a4.499 4.499 0 11-8.998 0A4.499 4.499 0 0111.5 7zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z"></path>
             </SearchIcon>
-            <button type="submit">Search</button>
+            <Button text="Search" type="submit" />
           </form>
         </FormContainer>
 
         <MainContainer>
           <SideBar ref={scrollableElementRef}>
             <ul>
-              {console.log(data)}
               {data.map((repo, index) => {
                 return (
                   <Repository
@@ -306,6 +356,7 @@ function App() {
                     onClick={() => {
                       getCommits(`${repo.name}`);
                       setSelectedRepo(`${repo.name}`);
+                      setShowCommits(true);
                     }}
                     className={
                       selectedRepo === `${repo.name}` ? "active-repo" : null
@@ -325,6 +376,7 @@ function App() {
                       onClick={(e) => {
                         setPageNum(index + 1);
                         handlePageChange(e);
+                        setSelectedRepo(null);
                         setCommits([]);
                       }}>
                       {index + 1}
@@ -333,14 +385,35 @@ function App() {
                 })}
             </PaginationContainer>
           </SideBar>
-
-          <CommitContent>
-            <ul>
-              {commits.map((commit, index) => {
-                return <Commit key={index} commit={commit} />;
-              })}
-            </ul>
-          </CommitContent>
+          {!resize ? (
+            <CommitContent>
+              <ul>
+                {commits.map((commit, index) => {
+                  return <Commit key={index} commit={commit} />;
+                })}
+              </ul>
+            </CommitContent>
+          ) : (
+            showCommits &&
+            selectedRepo && (
+              <MobileCommitContent>
+                <div>
+                  <Button
+                    text="Back"
+                    onClick={() => {
+                      console.log("clicked!");
+                      setShowCommits(false);
+                    }}
+                  />
+                </div>
+                <ul>
+                  {commits.map((commit, index) => {
+                    return <Commit key={index} commit={commit} />;
+                  })}
+                </ul>
+              </MobileCommitContent>
+            )
+          )}
         </MainContainer>
       </AppContainer>
     </>
