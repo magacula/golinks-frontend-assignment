@@ -221,6 +221,8 @@ function App() {
 
   // ref used to target scrollable element to scroll back to top after switching pages
   const scrollableElementRef = useRef();
+  // ref used to target input field to be cleared on button submit
+  const inputRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -331,6 +333,7 @@ function App() {
         <FormContainer>
           <form onSubmit={handleSubmit}>
             <Search
+              ref={inputRef}
               type="text"
               placeholder="Enter an organization…"
               aria-label="Enter an organization…"
@@ -341,7 +344,13 @@ function App() {
                 fillRule="evenodd"
                 d="M11.5 7a4.499 4.499 0 11-8.998 0A4.499 4.499 0 0111.5 7zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z"></path>
             </SearchIcon>
-            <Button text="Search" type="submit" />
+            <Button
+              text="Search"
+              type="submit"
+              onClick={() => {
+                inputRef.current.blur();
+              }}
+            />
           </form>
         </FormContainer>
 
