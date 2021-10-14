@@ -45,7 +45,7 @@ const Search = styled.input`
   border: 2px solid #22262c;
   border-radius: 6px;
   min-width: 300px;
-  text-transform: capitalize;
+  /* text-transform: capitalize; */
 
   &:focus {
     border-color: #1f6feb;
@@ -224,10 +224,15 @@ function App() {
   // ref used to target input field to be cleared on button submit
   const inputRef = useRef(null);
 
+  const [error, setError] = useState(true);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     fetchRepos(1);
-    getTotalRepoCount();
+
+    if (data.length !== 0) {
+      getTotalRepoCount();
+    }
   };
 
   const handleInputChange = (e) => {
@@ -263,8 +268,8 @@ function App() {
   // makes API Call to retrieve total amount of public repositories
   const getTotalRepoCount = async () => {
     const data = await fetchData(`https://api.github.com/orgs/${orgName}`);
-    setTitle(data.name);
 
+    setTitle(data.name);
     let totalPages = Math.round(data.public_repos / 30);
     setTotalPages(totalPages);
     setTotalRepos(data.public_repos);
@@ -275,7 +280,15 @@ function App() {
     const data = await fetchData(
       `https://api.github.com/orgs/${orgName}/repos?page=${pageNum}`
     );
-    sortByStars(data);
+
+    if (data.length === 0 || data == null) {
+      console.log("FAILED");
+      setData([]);
+      setOrgName("");
+      alert("Please enter a valid organization name");
+    } else {
+      sortByStars(data);
+    }
   };
 
   // Sorting Repos in Descending Order
@@ -329,7 +342,6 @@ function App() {
             </Title>
           </HeadingContainer>
         )}
-
         <FormContainer>
           <form onSubmit={handleSubmit}>
             <Search
@@ -338,6 +350,7 @@ function App() {
               placeholder="Enter an organization…"
               aria-label="Enter an organization…"
               onChange={handleInputChange}
+              value={orgName}
             />
             <SearchIcon>
               <path
@@ -353,7 +366,6 @@ function App() {
             />
           </form>
         </FormContainer>
-
         <MainContainer>
           <SideBar ref={scrollableElementRef}>
             <ul>
@@ -375,23 +387,27 @@ function App() {
               })}
             </ul>
             <PaginationContainer>
-              {Array(totalPages)
-                .fill()
-                .map((page, index) => {
-                  return (
-                    <button
-                      className={pageNum === index + 1 ? "active-page" : null}
-                      key={index}
-                      onClick={(e) => {
-                        setPageNum(index + 1);
-                        handlePageChange(e);
-                        setSelectedRepo(null);
-                        setCommits([]);
-                      }}>
-                      {index + 1}
-                    </button>
-                  );
-                })}
+              {totalPages
+                ? Array(totalPages)
+                    .fill()
+                    .map((page, index) => {
+                      return (
+                        <button
+                          className={
+                            pageNum === index + 1 ? "active-page" : null
+                          }
+                          key={index}
+                          onClick={(e) => {
+                            setPageNum(index + 1);
+                            handlePageChange(e);
+                            setSelectedRepo(null);
+                            setCommits([]);
+                          }}>
+                          {index + 1}
+                        </button>
+                      );
+                    })
+                : null}
             </PaginationContainer>
           </SideBar>
           {!resize ? (
@@ -410,7 +426,6 @@ function App() {
                   <Button
                     text="Back"
                     onClick={() => {
-                      console.log("clicked!");
                       setShowCommits(false);
                     }}
                   />
