@@ -205,7 +205,7 @@ const MobileCommitContent = styled.div`
 `;
 
 function App() {
-  const [orgName, setOrgName] = useState(null);
+  const [orgName, setOrgName] = useState("");
   const [title, setTitle] = useState(null);
 
   const [totalRepos, setTotalRepos] = useState(0);
@@ -229,10 +229,6 @@ function App() {
   const handleSubmit = (e) => {
     e.preventDefault();
     fetchRepos(1);
-
-    if (data.length !== 0) {
-      getTotalRepoCount();
-    }
   };
 
   const handleInputChange = (e) => {
@@ -281,13 +277,16 @@ function App() {
       `https://api.github.com/orgs/${orgName}/repos?page=${pageNum}`
     );
 
+    // validates organization name
     if (data.length === 0 || data == null) {
       console.log("FAILED");
       setData([]);
       setOrgName("");
+      setTotalPages(0);
       alert("Please enter a valid organization name");
     } else {
       sortByStars(data);
+      getTotalRepoCount();
     }
   };
 
@@ -386,28 +385,25 @@ function App() {
                 );
               })}
             </ul>
+
             <PaginationContainer>
-              {totalPages
-                ? Array(totalPages)
-                    .fill()
-                    .map((page, index) => {
-                      return (
-                        <button
-                          className={
-                            pageNum === index + 1 ? "active-page" : null
-                          }
-                          key={index}
-                          onClick={(e) => {
-                            setPageNum(index + 1);
-                            handlePageChange(e);
-                            setSelectedRepo(null);
-                            setCommits([]);
-                          }}>
-                          {index + 1}
-                        </button>
-                      );
-                    })
-                : null}
+              {Array(totalPages)
+                .fill()
+                .map((page, index) => {
+                  return (
+                    <button
+                      className={pageNum === index + 1 ? "active-page" : null}
+                      key={index}
+                      onClick={(e) => {
+                        setPageNum(index + 1);
+                        handlePageChange(e);
+                        setSelectedRepo(null);
+                        setCommits([]);
+                      }}>
+                      {index + 1}
+                    </button>
+                  );
+                })}
             </PaginationContainer>
           </SideBar>
           {!resize ? (
