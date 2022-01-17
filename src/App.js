@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import { ScaleLoader } from "react-spinners";
 import { Repository } from "./components/Repository";
 import { Commit } from "./components/Commit";
+import { CommitContent } from "./components/CommitContent";
 import { fetchData } from "./api/api";
 import { Button } from "./components/Button";
 
@@ -164,16 +164,6 @@ const PaginationContainer = styled.div`
   }
 `;
 
-const CommitContent = styled.section`
-  overflow-y: auto;
-  margin-left: 600px;
-  padding: 16px 48px;
-  width: 600px;
-  top: 180px;
-  position: fixed;
-  bottom: 0;
-`;
-
 const MobileCommitContent = styled.div`
   overflow-y: auto;
   margin-left: 600px;
@@ -224,8 +214,6 @@ function App() {
   // ref used to target input field to be cleared on button submit
   const inputRef = useRef(null);
 
-  const [error, setError] = useState(true);
-
   const handleSubmit = (e) => {
     e.preventDefault();
     fetchRepos(1);
@@ -266,8 +254,9 @@ function App() {
     const data = await fetchData(`https://api.github.com/orgs/${orgName}`);
 
     setTitle(data.name);
-    let totalPages = Math.round(data.public_repos / 30);
-    setTotalPages(totalPages);
+    const reposPerPage = 30;
+    let numOfPages = Math.round(data.public_repos / reposPerPage);
+    setTotalPages(numOfPages);
     setTotalRepos(data.public_repos);
   };
 
@@ -277,16 +266,27 @@ function App() {
       `https://api.github.com/orgs/${orgName}/repos?page=${pageNum}`
     );
 
-    // validates organization name
-    if (data.length === 0 || data == null) {
-      console.log("FAILED");
+    console.log("DATA", data);
+
+    if (data === undefined) {
       setData([]);
       setOrgName("");
       setTotalPages(0);
-      alert("Please enter a valid organization name");
-    } else {
+      alert(
+        "This organization does not exist. Please enter a valid organization"
+      );
+    }
+    // if public repos exists within organization
+    else if (data.length > 0) {
       sortByStars(data);
       getTotalRepoCount();
+    }
+    // There the organization has no public repositories
+    else if (data.length === 0) {
+      setData([]);
+      setOrgName("");
+      setTotalPages(0);
+      alert("This organization has no public repositories.");
     }
   };
 
@@ -306,6 +306,7 @@ function App() {
     const data = await fetchData(
       `https://api.github.com/repos/${orgName}/${repo}/commits?per_page/master`
     );
+    console.log("COMMITS", data);
     setCommits(data);
   };
 
@@ -315,7 +316,7 @@ function App() {
     scrollableElementRef.current.scrollTo(0, 0);
 
     // only fetch repos if organization name is entered into input
-    if (orgName) {
+    if (orgName !== "") {
       fetchRepos(pageNum);
     }
   }, [pageNum]);
@@ -385,7 +386,6 @@ function App() {
                 );
               })}
             </ul>
-
             <PaginationContainer>
               {Array(totalPages)
                 .fill()
@@ -407,13 +407,7 @@ function App() {
             </PaginationContainer>
           </SideBar>
           {!resize ? (
-            <CommitContent>
-              <ul>
-                {commits.map((commit, index) => {
-                  return <Commit key={index} commit={commit} />;
-                })}
-              </ul>
-            </CommitContent>
+            <CommitContent commits={commits} />
           ) : (
             showCommits &&
             selectedRepo && (

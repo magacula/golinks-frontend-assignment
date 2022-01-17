@@ -1,5 +1,3 @@
-import React from "react";
-
 export const fetchData = async (url) => {
   try {
     const response = await fetch(url);
@@ -8,10 +6,9 @@ export const fetchData = async (url) => {
       // 200 request
       return data;
     } else {
-      // request failed (404 status)
-      return [];
+      throw Error(response.statusText);
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };

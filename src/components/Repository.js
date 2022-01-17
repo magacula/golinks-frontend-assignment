@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import styled from "styled-components";
 import { formatDate } from "../utils";
 
@@ -102,7 +102,11 @@ export const Repository = ({ repo, onClick, className }) => {
     <>
       <RepoContainer onClick={onClick} className={className}>
         <RepoName>
-          <a href={repo.html_url} className={className} target="_blank">
+          <a
+            href={repo.html_url}
+            className={className}
+            target="_blank"
+            rel="noreferrer">
             {repo.name}
           </a>
         </RepoName>
