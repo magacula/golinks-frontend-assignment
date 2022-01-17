@@ -216,7 +216,12 @@ function App() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    fetchRepos(1);
+
+    if (orgName !== "") {
+      fetchRepos(1);
+    } else {
+      alert("Please enter a organization");
+    }
   };
 
   const handleInputChange = (e) => {
