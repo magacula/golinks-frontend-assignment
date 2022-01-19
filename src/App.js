@@ -196,6 +196,7 @@ const MobileCommitContent = styled.div`
 
 function App() {
   const [orgName, setOrgName] = useState("");
+  const [currentOrg, setCurrentOrg] = useState("");
   const [title, setTitle] = useState(null);
 
   const [totalRepos, setTotalRepos] = useState(0);
@@ -218,7 +219,9 @@ function App() {
     e.preventDefault();
 
     if (orgName !== "") {
+      console.log("ORG NAME", orgName);
       fetchRepos(1);
+      setCurrentOrg(orgName);
     } else {
       alert("Please enter a organization");
     }
@@ -308,8 +311,9 @@ function App() {
 
   // Fetch a list of recent commits from repo
   const getCommits = async (repo) => {
+    console.log("CURRENT", currentOrg);
     const data = await fetchData(
-      `https://api.github.com/repos/${orgName}/${repo}/commits?per_page/master`
+      `https://api.github.com/repos/${currentOrg}/${repo}/commits?per_page/master`
     );
     console.log("COMMITS", data);
     setCommits(data);
